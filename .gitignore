@@ -1,0 +1,4 @@
+.idea/
+vendor/
+reports/
+tests/fixtures/test_eaccess.file
