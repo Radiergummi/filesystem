@@ -7,13 +7,13 @@ use Generator;
 use InvalidArgumentException;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
-use Radiergummi\FileSystem\AdapterInterface;
 use Radiergummi\FileSystem\Entities\File;
 use Radiergummi\FileSystem\Exceptions\EntityExistsException;
 use Radiergummi\FileSystem\Exceptions\EntityIsDirectoryException;
 use Radiergummi\FileSystem\Exceptions\EntityIsNoDirectoryException;
 use Radiergummi\FileSystem\Exceptions\EntityNotAccessibleException;
 use Radiergummi\FileSystem\Exceptions\EntityNotFoundException;
+use Radiergummi\FileSystem\Interfaces\AdapterInterface;
 use Radiergummi\FileSystem\MetaData;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -59,14 +59,15 @@ class LocalAdapter implements AdapterInterface
     {
         try {
             $contents = $this->streamFactory->createStreamFromFile($path);
+            $metaData = $this->stat($path);
         } catch (Throwable $exception) {
             throw new EntityNotAccessibleException($path, $exception);
         }
 
         return new File(
             $path,
-            fn(): StreamInterface => $contents,
-            fn(): MetaData => $this->stat($path)
+            $contents,
+            $metaData
         );
     }
 

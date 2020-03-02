@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Radiergummi\FileSystem;
+namespace Radiergummi\FileSystem\Interfaces;
 
 use Generator;
 use Psr\Http\Message\StreamInterface;
@@ -11,6 +11,7 @@ use Radiergummi\FileSystem\Exceptions\EntityIsDirectoryException;
 use Radiergummi\FileSystem\Exceptions\EntityIsNoDirectoryException;
 use Radiergummi\FileSystem\Exceptions\EntityNotAccessibleException;
 use Radiergummi\FileSystem\Exceptions\EntityNotFoundException;
+use Radiergummi\FileSystem\MetaData;
 
 interface AdapterInterface
 {
@@ -141,6 +142,7 @@ interface AdapterInterface
      * @return void
      * @throws EntityExistsException
      * @throws EntityNotAccessibleException
+     * @throws EntityIsNoDirectoryException
      */
     public function createDirectory(string $path): void;
 }

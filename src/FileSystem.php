@@ -2,25 +2,45 @@
 
 namespace Radiergummi\FileSystem;
 
+use Generator;
 use Psr\Http\Message\StreamInterface;
-use Radiergummi\FileSystem\Entities\Directory;
+use Psr\SimpleCache\CacheInterface;
+use Psr\SimpleCache\InvalidArgumentException;
+use Radiergummi\FileSystem\Behaviour\CacheAwareTrait;
+use Radiergummi\FileSystem\Behaviour\RootPathGuardingTrait;
 use Radiergummi\FileSystem\Entities\File;
 use Radiergummi\FileSystem\Exceptions\RootViolationException;
+use Radiergummi\FileSystem\Interfaces\AdapterInterface;
+use Radiergummi\FileSystem\Interfaces\FileSystemInterface;
 use RuntimeException;
 
 use function basename;
 use function dirname;
 
+/**
+ * Default FileSystemInterface implementation.
+ *
+ * @package Radiergummi\FileSystem
+ */
 class FileSystem implements FileSystemInterface
 {
+    use CacheAwareTrait;
+    use RootPathGuardingTrait;
+
     protected AdapterInterface $adapter;
 
-    protected ?string $rootPath;
-
-    public function __construct(AdapterInterface $adapter, ?string $rootPath = null)
+    /**
+     * FileSystem constructor.
+     *
+     * @param AdapterInterface    $adapter  File system adapter to connect to the storage with.
+     * @param CacheInterface|null $cache    A generic cache to store files in.
+     * @param string|null         $rootPath Root path to limit the file system to.
+     */
+    public function __construct(AdapterInterface $adapter, ?CacheInterface $cache = null, ?string $rootPath = null)
     {
         $this->adapter = $adapter;
-        $this->rootPath = $rootPath;
+        $this->setRootPath($rootPath);
+        $this->setCache($cache);
     }
 
     /**
@@ -53,10 +73,15 @@ class FileSystem implements FileSystemInterface
      * @throws Exceptions\EntityNotAccessibleException
      * @throws Exceptions\EntityNotFoundException
      * @throws RootViolationException
+     * @throws InvalidArgumentException
      */
-    public function read(string $path): ?File
+    public function readFile(string $path): ?File
     {
         $path = $this->normalizePath($path);
+
+        if ($this->cache && $this->cache->has($path)) {
+            return $this->cache->get($path);
+        }
 
         return $this->adapter->read($path);
     }
@@ -84,17 +109,18 @@ class FileSystem implements FileSystemInterface
      * @param string|null $path
      * @param bool        $recursive
      *
-     * @return Directory|null
+     * @return Generator
+     * @throws Exceptions\EntityIsDirectoryException
      * @throws Exceptions\EntityIsNoDirectoryException
      * @throws Exceptions\EntityNotAccessibleException
      * @throws Exceptions\EntityNotFoundException
      * @throws RootViolationException
      */
-    public function readDirectory(?string $path = null, bool $recursive = false): ?Directory
+    public function readDirectory(?string $path = null, bool $recursive = false): Generator
     {
         $path = $this->normalizePath($path);
 
-        return $this->adapter->readDirectory($path);
+        yield from $this->adapter->readDirectory($path);
     }
 
     /**
@@ -110,7 +136,7 @@ class FileSystem implements FileSystemInterface
      * @throws RootViolationException
      * @throws RuntimeException
      */
-    public function write(string $path, StreamInterface $contents, ?int $flags = null): void
+    public function writeFile(string $path, StreamInterface $contents, ?int $flags = null): void
     {
         $path = $this->normalizePath($path);
 
@@ -190,7 +216,7 @@ class FileSystem implements FileSystemInterface
      * @throws Exceptions\EntityNotFoundException
      * @throws RootViolationException
      */
-    public function delete(string $path): void
+    public function deleteFile(string $path): void
     {
         $path = $this->normalizePath($path);
 
@@ -249,9 +275,7 @@ class FileSystem implements FileSystemInterface
         $path = joinPath($this->rootPath, $path);
         $path = normalizePath($path);
 
-        if (! pathStartsWith($path, $this->rootPath)) {
-            throw new RootViolationException($path, $this->rootPath);
-        }
+        $this->checkRootPathViolation($path);
 
         return $path;
     }

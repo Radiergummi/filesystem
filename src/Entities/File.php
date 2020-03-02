@@ -16,25 +16,15 @@ class File extends FileSystemEntity
 {
     protected string $path;
 
-    protected ?StreamInterface $stream = null;
+    protected StreamInterface $stream;
 
     protected ?MetaData $metaData = null;
 
-    /**
-     * @var callable
-     */
-    protected $streamGetter;
-
-    /**
-     * @var callable
-     */
-    protected $metaDataGetter;
-
-    public function __construct(string $path, callable $streamGetter, callable $metaDataGetter)
+    public function __construct(string $path, StreamInterface $stream, ?MetaData $metaData = null)
     {
         $this->path = $path;
-        $this->streamGetter = $streamGetter;
-        $this->metaDataGetter = $metaDataGetter;
+        $this->stream = $stream;
+        $this->metaData = $metaData;
     }
 
     public function getPath(): string
@@ -59,23 +49,11 @@ class File extends FileSystemEntity
 
     public function getStream(): StreamInterface
     {
-        if (! $this->stream) {
-            $getter = $this->streamGetter;
-
-            $this->stream = $getter();
-        }
-
         return $this->stream;
     }
 
-    public function getStats(): MetaData
+    public function getMetaData(): ?MetaData
     {
-        if (! $this->metaData) {
-            $getter = $this->metaDataGetter;
-
-            $this->metaData = $getter();
-        }
-
         return $this->metaData;
     }
 

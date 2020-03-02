@@ -23,7 +23,7 @@ class Directory extends FileSystemEntity implements IteratorAggregate
         $this->metaData = $metaData;
     }
 
-    public function getStats(): MetaData
+    public function getMetaData(): MetaData
     {
         return $this->metaData;
     }

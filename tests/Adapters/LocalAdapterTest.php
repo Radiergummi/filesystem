@@ -44,7 +44,7 @@ class LocalAdapterTest extends TestCase
         $fileSystem = new FileSystem($adapter, __DIR__ . '/../fixtures');
         $streamFactory = new StreamFactory();
 
-        $fileSystem->write('foo/bar/baz', $streamFactory->createStream('foo'));
+        $fileSystem->writeFile('foo/bar/baz', $streamFactory->createStream('foo'));
     }
 
     public function testWriteBailsOnDirectory(): void
@@ -55,7 +55,7 @@ class LocalAdapterTest extends TestCase
         $fileSystem = new FileSystem($adapter, realpath(__DIR__ . '/..'));
         $streamFactory = new StreamFactory();
 
-        $fileSystem->write('.', $streamFactory->createStream('foo'));
+        $fileSystem->writeFile('.', $streamFactory->createStream('foo'));
     }
 
     public function testWriteBailsOnInsufficientPermissions(): void
@@ -69,14 +69,14 @@ class LocalAdapterTest extends TestCase
         touch(__DIR__ . '/../fixtures/test_eaccess.file');
         chmod(__DIR__ . '/../fixtures/test_eaccess.file', 0);
 
-        $fileSystem->write('test_eaccess.file', $streamFactory->createStream('foo'));
+        $fileSystem->writeFile('test_eaccess.file', $streamFactory->createStream('foo'));
     }
 
     public function testRead(): void
     {
         $adapter = new LocalAdapter();
         $fileSystem = new FileSystem($adapter, __DIR__ . '/../fixtures');
-        $file = $fileSystem->read('foo.txt');
+        $file = $fileSystem->readFile('foo.txt');
 
         $this->assertInstanceOf(File::class, $file);
         $this->assertInstanceOf(FileSystemEntity::class, $file);

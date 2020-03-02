@@ -6,5 +6,5 @@ use Radiergummi\FileSystem\MetaData;
 
 abstract class FileSystemEntity
 {
-    abstract public function getStats(): MetaData;
+    abstract public function getMetaData(): ?MetaData;
 }

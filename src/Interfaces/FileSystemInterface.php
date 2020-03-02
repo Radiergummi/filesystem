@@ -1,13 +1,20 @@
 <?php declare(strict_types = 1);
 
-namespace Radiergummi\FileSystem;
+namespace Radiergummi\FileSystem\Interfaces;
 
+use Generator;
 use Psr\Http\Message\StreamInterface;
 use Radiergummi\FileSystem\Entities\Directory;
 use Radiergummi\FileSystem\Entities\File;
+use Radiergummi\FileSystem\MetaData;
 
 interface FileSystemInterface
 {
+    /**
+     * Creates a new file system.
+     *
+     * @param AdapterInterface $adapter File system adapter to connect to the storage with.
+     */
     public function __construct(AdapterInterface $adapter);
 
     /**
@@ -26,7 +33,7 @@ interface FileSystemInterface
      *
      * @return File|null The file.
      */
-    public function read(string $path): ?File;
+    public function readFile(string $path): ?File;
 
     /**
      * Reads meta data of a file or directory.
@@ -45,7 +52,7 @@ interface FileSystemInterface
      *
      * @return Directory|null The directory.
      */
-    public function readDirectory(?string $directory = null, bool $recursive = false): ?Directory;
+    public function readDirectory(?string $directory = null, bool $recursive = false): Generator;
 
     /**
      * Writes to a file.
@@ -56,7 +63,7 @@ interface FileSystemInterface
      *
      * @return void
      */
-    public function write(string $path, StreamInterface $contents, ?int $flags = null): void;
+    public function writeFile(string $path, StreamInterface $contents, ?int $flags = null): void;
 
     /**
      * Renames a file.
@@ -95,7 +102,7 @@ interface FileSystemInterface
      *
      * @return void
      */
-    public function delete(string $path): void;
+    public function deleteFile(string $path): void;
 
     /**
      * Deletes a directory.
