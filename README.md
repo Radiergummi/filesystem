@@ -62,8 +62,26 @@ Method reference
 ----------------
 The file system exposes the following methods:
 
-### `exists(string $path): bool`
+ - [`exists(string $path): bool`](#exists)
+ - [`readFile(string $path): ?File`](#read-file)
+ - [`getMetaData(string $path): ?MetaData`](#get-meta-data)
+ - [`readDirectory(?string $directory = null, bool $recursive = false): Generator`](#read-directory)
+ - [`writeFile(string $path, StreamInterface $contents, ?int $flags = null): void`](#write-file)
+ - [`rename(string $sourcePath, string $newName): void`](#rename)
+ - [`copy(string $sourcePath, string $destinationPath): void`](#copy)
+ - [`move(string $sourcePath, string $destinationPath): void`](#move)
+ - [`deleteFile(string $path): void`](#delete-file)
+ - [`deleteDirectory(string $path): void`](#delete-directory)
+ - [`createDirectory(string $path): void`](#create-directory)
+ - [`getAdapter(): AdapterInterface`](#get-adapter)
+
+### Exists
 Checks whether an entity exists at a given path. This works for both files and directories.
+
+**Signature:**
+```php
+public function exists(string $path): bool
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the entity does not exist.
@@ -72,9 +90,14 @@ Checks whether an entity exists at a given path. This works for both files and d
  - [Root Violation](#rootviolationexception). Will be thrown if the entity is located outside of the configured file 
    system root.
 
-### `readFile(string $path): ?File`
+### Read File
 Reads a file at a given path and returns a new [`File`](#file-objects) instance. Files expose a range of convenience 
 methods in addition to getters for the content stream and [`MetaData`](#metadata-objects) instance.  
+
+**Signature:**
+```php
+public function readFile(string $path): ?File
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the file does not exist.
@@ -85,8 +108,13 @@ methods in addition to getters for the content stream and [`MetaData`](#metadata
  - [Root Violation](#rootviolationexception). Will be thrown if the file is located outside of the configured file 
    system root.
 
-### `getMetaData(string $path): ?MetaData`
+### Get Meta Data
 Retrieves a [`MetaData`](#metadata-objects) instance, _if the adapter supports it_. Null will be returned otherwise.
+
+**Signature:**
+```php
+public function getMetaData(string $path): ?MetaData
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the file or directory does not exist.
@@ -95,7 +123,7 @@ Retrieves a [`MetaData`](#metadata-objects) instance, _if the adapter supports i
  - [Root Violation](#rootviolationexception). Will be thrown if the entity is located outside of the configured file 
    system root.
 
-### `readDirectory(?string $path = null, bool $recursive = false): Generator<FileSystemEntity>`
+### Read Directory
 Lists the contents of a directory at the given path. The method always returns a generator, allowing you to efficiently
 iterate the results, even if they grow very large. It's up to the adapter implementation to make use of the generator, 
 allowing for both files being fetched during iteration or beforehand, including pagination handling etc.  
@@ -103,6 +131,11 @@ The results will be instances of `FileSystemEntity`, giving you access to their 
 
 Adapters that don't support directories should handle this call by returning a flat list of files or use the path to 
 otherwise figure out the files the user is looking for.
+
+**Signature:**
+```php
+public function readDirectory(?string $path = null, bool $recursive = false): Generator<FileSystemEntity>
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the directory does not exist.
@@ -113,8 +146,13 @@ otherwise figure out the files the user is looking for.
  - [Root Violation](#rootviolationexception). Will be thrown if the directory is located outside of the configured file 
    system root.
 
-### `writeFile(string $path, StreamInterface $contents, ?int $flags = null): void`
+### Write File
 Writes to a file at the given path.
+
+**Signature:**
+```php
+public function writeFile(string $path, StreamInterface $contents, ?int $flags = null): void
+```
 
 **Possible errors:**  
  - [Entity Is Not A Directory](#entityisnodirectoryexception). Will be thrown if the parent segment of the file path is 
@@ -124,12 +162,17 @@ Writes to a file at the given path.
  - [Root Violation](#rootviolationexception). Will be thrown if the file is located outside of the configured file 
    system root.
 
-### `rename(string $path, string $newName): void`
+### Rename
 Renames a file _or directory_ in place: While the first parameter has to be the full file path, the second is designed 
 to be the new file base name only. Therefore, to rename `/foo/bar/baz.txt` to `/foo/bar/quz.json`, you would call it as
 `rename('/foo/bar/baz.txt', 'quz.json')`. To move the file to a new path, use the
 [`move`](#movestring-sourcepath-string-destinationpath-void) method instead. Adapter implementations will forward this 
 to a `move` call in most cases.
+
+**Signature:**
+```php
+public function rename(string $path, string $newName): void
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the entity does not exist.
@@ -139,9 +182,14 @@ to a `move` call in most cases.
  - [Root Violation](#rootviolationexception). Will be thrown if the entity is located outside of the configured file  
    system root.
 
-### `copy(string $sourcePath, string $destinationPath): void`
+### Copy
 Copies a file _or directory_ from the source path to the destination path. Directories will be copied recursively, if 
 the underlying file system supports it. 
+
+**Signature:**
+```php
+public function copy(string $sourcePath, string $destinationPath): void
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the source entity does not exist.
@@ -153,8 +201,13 @@ the underlying file system supports it.
  - [Root Violation](#rootviolationexception). Will be thrown if the entity is located outside of the configured file  
    system root.
 
-### `move(string $sourcePath, string $destinationPath): void`
+### Move
 Moves a file _or directory_ from the source path to the destination path.
+
+**Signature:**
+```php
+public function move(string $sourcePath, string $destinationPath): void
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the source entity does not exist.
@@ -167,12 +220,17 @@ Moves a file _or directory_ from the source path to the destination path.
  - [Root Violation](#rootviolationexception). Will be thrown if the entity is located outside of the configured file  
    system root.
 
-### `deleteFile(string $path): void`
+### Delete File
 Deletes a file on the file system. This operation will fail for directories, so you should use the 
 [`deleteDirectory`](#deletedirectorystring-path-void) method instead. While it would technically be possible do support
 both from the same method, prohibiting this was a deliberate design choice: Using the `deleteDirectory` method makes the
 intent to delete a full directory absolutely clear, potentially helping to avoid shredding entire directory trees by 
 accident.
+
+**Signature:**
+```php
+public function deleteFile(string $path): void
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the directory does not exist.
@@ -183,9 +241,14 @@ accident.
  - [Root Violation](#rootviolationexception). Will be thrown if the file is located outside of the configured file  
    system root.
 
-### `deleteDirectory(string $path): void`
+### Delete Directory
 Deletes a directory _and all its contents_. This may or may not be supported by the underlying file system but adapter 
 implementations should take care to handle this fact transparently.
+
+**Signature:**
+```php
+public function deleteDirectory(string $path): void
+```
 
 **Possible errors:**  
  - [Entity Not Found](#entitynotfoundexception). Will be thrown if the directory does not exist.
@@ -196,9 +259,14 @@ implementations should take care to handle this fact transparently.
  - [Root Violation](#rootviolationexception). Will be thrown if the directory is located outside of the configured file 
    system root.
 
-### `createDirectory(string $path): void`
+### Create Directory
 Creates a new directory. This may or may not be supported by the underlying file system but adapter implementations 
 should take care to handle this fact transparently.
+
+**Signature:**
+```php
+public function createDirectory(string $path): void
+```
 
 **Possible errors:**  
  - [Entity Exists](#entityexistsexception). Will be thrown if an entity exists at the target path.
@@ -209,9 +277,14 @@ should take care to handle this fact transparently.
  - [Root Violation](#rootviolationexception). Will be thrown if the file is located outside of the configured file  
    system root.
    
-### `getAdapter(): AdapterInterface`
+### Get Adapter
 Retrieves the adapter instance. This method exists as an escape hatch in case you need to perform an operation not 
 directly supported by FileSystem without breaking the encapsulation. I recommend avoiding this, tho.
+
+**Signature:**
+```php
+public function getAdapter(): AdapterInterface
+```
 
 Errors
 ------

@@ -121,4 +121,11 @@ interface FileSystemInterface
      * @return void
      */
     public function createDirectory(string $path): void;
+
+    /**
+     * Retrieves the adapter instance.
+     *
+     * @return AdapterInterface
+     */
+    public function geAdapter(): AdapterInterface;
 }
